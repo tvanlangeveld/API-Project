@@ -12,11 +12,20 @@ import UIKit
  2. Follow the instructions in the `User` file.
  3. Follow the instructions in the `NetworkManager` file.
  */
-class UsersViewController: UIViewController {
+class UsersViewController: UIViewController, NetworkManagerDelegate {
     
-    /**
-     4. Create a variable called `users` and set it to an empty array of `User` objects.
-     */
+    
+    @IBOutlet weak var tableView: UITableView!
+    
+    
+    func usersRetrieved(users: [User]) {
+        usersData = users
+    }
+    
+    
+    var usersData = [User]()
+  
+    
     
     /**
      5. Connect the UITableView to the code. Create a function called `configureTableView` that configures the table view. You may find the `Constants` file helpful. Make sure to call the function in the appropriate spot.
@@ -24,14 +33,37 @@ class UsersViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         getUsers()
+        
     }
     
     /**
      6.1 Set the `NetworkManager`'s delegate property to the `UsersViewController`. Have the `UsersViewController` conform to the `NetworkManagerDelegate` protocol. Call the `NetworkManager`'s `getUsers` function. In the `usersRetrieved` function, assign the `users` property to the array we got back from the API and call `reloadData` on the table view.
      */
     func getUsers() {
+        NetworkManager.shared.getUsers()
         
+        NetworkManager.shared.delegate = self
+        tableView.dataSource = self
     }
 }
+
+
+extension UsersViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return usersData.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cellID")
+        
+        cell?.textLabel?.text = usersData[indexPath.row].firstName
+        cell?.detailTextLabel?.text = usersData[indexPath.row].email
+        
+        
+        return cell!
+    }
+    
+    
+}
+

@@ -21,11 +21,11 @@ class NetworkManager {
     
     private init() {}
     
-    var delegate: NetworkManagerDelegate?
     
     
     
-    func getUsers() {
+    
+    func getUsers(completion: @escaping (Result<[User], DMError>) -> Void) {
         
         let userURL = "\(baseUrl)users"
         
@@ -38,16 +38,24 @@ class NetworkManager {
                 
                 if let data {
                     do {
-                     let userData = try decoder.decode(UserResponse.self, from: data)
-                        self.delegate?.usersRetrieved(users: userData.data)
+                        let userData = try decoder.decode(UserResponse.self, from: data)
+                        completion(.success(userData.data))
+
                     } catch {
-                        print("Error getting users data \(error)")
+                        completion(.failure(DMError.invalidData))
+                        
                     }
+                } else {
+                    completion(.failure(DMError.invalidData))
+                    
                 }
             }
             
             
             task.resume()
+        } else {
+            completion(.failure(DMError.invalidURL))
         }
+        
     }
 }

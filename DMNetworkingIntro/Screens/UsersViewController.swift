@@ -12,19 +12,17 @@ import UIKit
  2. Follow the instructions in the `User` file.
  3. Follow the instructions in the `NetworkManager` file.
  */
-class UsersViewController: UIViewController, NetworkManagerDelegate {
+class UsersViewController: UIViewController {
     
     
     @IBOutlet weak var tableView: UITableView!
     
     
-    func usersRetrieved(users: [User]) {
-        usersData = users
-    }
+    
     
     
     var usersData = [User]()
-  
+    
     
     
     /**
@@ -33,6 +31,7 @@ class UsersViewController: UIViewController, NetworkManagerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        configureTableView()
         getUsers()
         
     }
@@ -41,10 +40,33 @@ class UsersViewController: UIViewController, NetworkManagerDelegate {
      6.1 Set the `NetworkManager`'s delegate property to the `UsersViewController`. Have the `UsersViewController` conform to the `NetworkManagerDelegate` protocol. Call the `NetworkManager`'s `getUsers` function. In the `usersRetrieved` function, assign the `users` property to the array we got back from the API and call `reloadData` on the table view.
      */
     func getUsers() {
-        NetworkManager.shared.getUsers()
+        NetworkManager.shared.getUsers { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let users):
+                    self.usersData = users
+                    
+                    self.tableView.reloadData()
+                case .failure(let error):
+                    let alertController = UIAlertController(title: error.rawValue, message: "Error! Try Again.", preferredStyle:  UIAlertController.Style.alert)
+                    
+                    let alertAction = UIAlertAction(title: "Return", style: .default)
+                    
+                    alertController.addAction(alertAction)
+                    
+                    self.present(alertController, animated: true)
+                }
+            }
+            
+        }
         
-        NetworkManager.shared.delegate = self
+        
+        
+    }
+    
+    func configureTableView(){
         tableView.dataSource = self
+        
     }
 }
 
@@ -66,4 +88,6 @@ extension UsersViewController: UITableViewDataSource {
     
     
 }
+
+
 
